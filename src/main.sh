@@ -1,27 +1,34 @@
 #!/bin/bash
 source src/banner.sh
 source src/diagnostics.sh
-source src/monitoring.sh
+source src/utils.sh
+LOG_PATH="./logs/toolkit.log"
 
-# ==============================
-#  Main Menu
-# ==============================
+
+show_banner
+
+
 
 while true; do
-    # Main Menu - Alphabetical Tags
-    choice=$(dialog --no-item-help --menu "Network Diagnostic Toolkit - Main Menu" 20 60 10 \
+    choice=$(dialog --clear --title "🌐 Network Diagnostic Toolkit - Main Menu" \
+        --menu "Select an option:" 20 60 10 \
         "a" "Ping Test" \
         "b" "Trace Route" \
         "c" "DNS Lookup" \
-        "d" "Port Scan (Nmap)" \
+        "d" "Port Scan" \
         "e" "Check Network Interfaces" \
         "f" "Show Open Network Connections" \
-        "g" "Packet Capture (requires sudo)" \
+        "g" "Packet Capture" \
         "h" "HTTP Status Check" \
         "i" "View Logs" \
         "j" "Exit" \
-        3>&1 1>&2 2>&3 3>&-)
+        3>&1 1>&2 2>&3)
 
+    if [ $? -ne 0 ]; then
+        clear
+        exit 0
+    fi
+clear
     case $choice in
         a) ping_test ;;
         b) trace_route ;;
@@ -32,15 +39,17 @@ while true; do
         g) packet_capture ;;
         h) http_check ;;
         i) 
-            if [ -f "$(pwd)/logs/toolkit.log" ]; then
-                dialog --textbox "$(pwd)/logs/toolkit.log" 20 70
+            if [ -f "$LOG_PATH" ]; then
+                dialog --tailbox "$LOG_PATH" 20 70
             else
                 dialog --msgbox "No logs found." 6 40
             fi
             ;;
         j) 
-            # Now customizing the buttons for consistency, and removing blinking
-            dialog --no-item-help --yes-label "YES" --no-label "NO" --yesno "Are you sure you want to exit?" 7 50
+            dialog --clear
+            dialog --title "🚪 Confirm Exit" \
+                   --yes-label "Yes" --no-label "No" \
+                   --yesno "Are you sure you want to exit?" 7 50
             if [ $? -eq 0 ]; then
                 clear
                 exit 0
